@@ -1,5 +1,6 @@
 package br.com.foodhub.core.domain.entity.menu;
 
+import br.com.foodhub.core.domain.exceptions.generic.DomainException;
 import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceConflictException;
 import lombok.Getter;
@@ -38,7 +39,25 @@ public class Menu {
     }
 
     public void removeItem(String itemId) {
-        this.items.removeIf(item -> itemId.equals(item.getId()));
+
+        boolean removed = this.items.removeIf(item -> itemId.equals(item.getId()));
+
+        if (!removed) {
+            throw new DomainException("Item não pertence ao menu");
+        }
+    }
+
+    public List<MenuItem> getItems() {
+        return List.copyOf(items);
+    }
+
+    public MenuItem getItemById(String itemId) {
+        return items.stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() ->
+                        new DomainException("Item não pertence ao menu")
+                );
     }
 
     /* =========================

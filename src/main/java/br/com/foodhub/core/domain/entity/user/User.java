@@ -2,6 +2,7 @@ package br.com.foodhub.core.domain.entity.user;
 
 import br.com.foodhub.core.domain.entity.association.UserAddress;
 import br.com.foodhub.core.domain.entity.association.UserRestaurant;
+import br.com.foodhub.core.domain.entity.restaurant.Restaurant;
 import br.com.foodhub.core.domain.exceptions.generic.BusinessRuleViolationException;
 import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceConflictException;
@@ -12,6 +13,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 public class User {
@@ -40,7 +42,7 @@ public class User {
         this.phone = require(phone, "Phone");
         this.password = require(password, "Password");
         this.userType = require(userType, "User Type");
-        this.attributes = attributes;
+        this.attributes = attributes != null ? attributes : UserProfile.empty();
     }
 
     /* =========================
@@ -62,7 +64,7 @@ public class User {
         }
     }
 
-    public void ensureCanManageRestaurant(String restaurantId) {
+    public void ensureCanManageRestaurant(Restaurant restaurant) {
 
         if (userType.isCustomer()) {
             throw new BusinessRuleViolationException(
@@ -70,7 +72,16 @@ public class User {
             );
         }
 
-        if (userType.isRestaurantRelated() && !isLinkedToRestaurant(restaurantId)) {
+        if (userType.isOwner()) {
+            if (!restaurant.getOwnerId().equals(this.id)) {
+                throw new BusinessRuleViolationException(
+                        "Usuário não é dono deste restaurante"
+                );
+            }
+            return;
+        }
+
+        if (userType.isRestaurantRelated() && !isLinkedToRestaurant(restaurant.getId())) {
             throw new BusinessRuleViolationException(
                     "Usuário não está vinculado ao restaurante"
             );
@@ -84,10 +95,24 @@ public class User {
         this.restaurants.add(userRestaurant);
     }
 
-    private boolean isLinkedToRestaurant(String restaurantId) {
+    public boolean isLinkedToRestaurant(String restaurantId) {
         return restaurants.stream()
                 .anyMatch(r -> r.getRestaurantId().equals(restaurantId));
     }
+
+    public void removeRestaurantLink(String restaurantId) {
+
+        boolean removed = restaurants.removeIf(
+                r -> r.getRestaurantId().equals(restaurantId)
+        );
+
+        if (!removed) {
+            throw new BusinessRuleViolationException(
+                    "Usuário não está vinculado a este restaurante"
+            );
+        }
+    }
+
 
     public void addAddress(UserAddress address) {
 
@@ -123,6 +148,22 @@ public class User {
         for (UserAddress address : addresses) {
             address.unmarkAsPrimary();
         }
+    }
+
+    public void changeName(String name) {
+        this.name = require(name, "Nome");
+    }
+
+    public void changeEmail(String email) {
+        this.email = normalizeEmail(require(email, "Email"));
+    }
+
+    public void changePhone(String phone) {
+        this.phone = require(phone, "Telefone");
+    }
+
+    public void updateProfile(UserProfile profile) {
+        this.attributes = Objects.requireNonNull(profile);
     }
 
 
