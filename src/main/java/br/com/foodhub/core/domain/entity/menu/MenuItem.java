@@ -30,6 +30,19 @@ public class MenuItem {
     /* =========================
        Validações de domínio
        ========================= */
+    public void update(
+            String name,
+            String description,
+            Double price,
+            boolean inRestaurantOnly,
+            String photograph
+    ) {
+        this.name = require(name, "Nome do item");
+        this.description = description;
+        this.price = validatePrice(require(price, "Preço"));
+        this.inRestaurantOnly = inRestaurantOnly;
+        this.photograph = normalizeOptional(photograph);
+    }
 
     private Double validatePrice(Double price) {
         if (price < 0) {

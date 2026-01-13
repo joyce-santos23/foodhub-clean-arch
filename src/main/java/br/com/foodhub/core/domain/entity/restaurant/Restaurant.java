@@ -2,7 +2,9 @@ package br.com.foodhub.core.domain.entity.restaurant;
 
 import br.com.foodhub.core.domain.entity.menu.Menu;
 import br.com.foodhub.core.domain.exceptions.generic.BusinessRuleViolationException;
+import br.com.foodhub.core.domain.exceptions.generic.DomainException;
 import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
+import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
 import br.com.foodhub.core.domain.exceptions.restaurant.InvalidCnpjException;
 import lombok.Getter;
 
@@ -21,6 +23,7 @@ public class Restaurant {
     private String complement;
     private List<OpeningHours> openingHours;
     private List<Menu> menus;
+    private boolean active;
 
     public Restaurant(
             String businessName,
@@ -41,11 +44,33 @@ public class Restaurant {
         this.complement = complement;
         this.openingHours = openingHours != null ? new ArrayList<>(openingHours) : new ArrayList<>();
         this.menus = new ArrayList<>();
+        this.active = true;
     }
 
     /* =========================
        Comportamentos de domínio
        ========================= */
+
+    public void updateBasicInfo(
+            String businessName,
+            String cuisineType,
+            String numberStreet,
+            String complement
+    ) {
+        this.businessName = require(businessName, "Nome do restaurante");
+        this.cuisineType = require(cuisineType, "Tipo de cozinha");
+        this.numberStreet = require(numberStreet, "Número");
+        this.complement = complement;
+    }
+
+    public void deactivate() {
+        if (!this.active) {
+            throw new BusinessRuleViolationException(
+                    "Restaurante já está desativado"
+            );
+        }
+        this.active = false;
+    }
 
     public void addMenu(Menu menu) {
         require(menu, "Menu");
@@ -58,6 +83,30 @@ public class Restaurant {
         }
 
         this.menus.add(menu);
+    }
+
+    public void removeMenu(String menuId) {
+
+        boolean removed = menus.removeIf(menu -> menu.getId().equals(menuId));
+
+        if (!removed) {
+            throw new DomainException(
+                    "Menu não pertence ao restaurante"
+            );
+        }
+    }
+
+    public List<Menu> getMenus() {
+        return List.copyOf(menus);
+    }
+
+    public Menu getMenuById(String menuId) {
+        return menus.stream()
+                .filter(menu -> menu.getId().equals(menuId))
+                .findFirst()
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Menu não pertence ao restaurante")
+                );
     }
 
     public void changeOpeningHours(List<OpeningHours> openingHours) {

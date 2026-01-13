@@ -26,6 +26,12 @@ public class UserAddress {
         this.primary = primary;
     }
 
+    public void update(String number, String complement) {
+        this.number = require(number, "Número");
+        this.complement = complement;
+    }
+
+
     public void markAsPrimary() {
         this.primary = true;
     }
