@@ -15,7 +15,7 @@ public class ListAllRestaurantUseCase {
     private final RestaurantGateway gateway;
 
     public PageResultDTO<RestaurantResultDTO> execute(PageRequestDTO dto) {
-        PageResultDTO<Restaurant> page = gateway.findAll(dto);
+        PageResultDTO<Restaurant> page = gateway.findAll(dto.page(), dto.size());
 
         return new PageResultDTO<>(
                 page.content().stream()

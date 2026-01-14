@@ -23,5 +23,9 @@ public class UserProfile {
     public boolean isEmpty() {
         return customFields.isEmpty();
     }
+
+    public Map<String, Object> toMap() {
+        return Map.copyOf(customFields);
+    }
 }
 

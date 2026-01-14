@@ -29,7 +29,7 @@ public class ListUserUseCase {
                         user.getPhone(),
                         user.getCpf(),
                         user.getUserType().getId(),
-                        (Map<String, Object>) user.getAttributes()
+                        user.getAttributes().toMap()
                 )).toList();
 
         return new PageResultDTO<>(
