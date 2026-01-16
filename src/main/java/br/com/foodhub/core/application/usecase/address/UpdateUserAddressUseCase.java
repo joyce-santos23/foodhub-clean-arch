@@ -16,15 +16,19 @@ public class UpdateUserAddressUseCase {
 
     private final UserGateway gateway;
 
-    public UserAddressResultDTO execute(UpdateUserAddressDTO dto) {
+    public UserAddressResultDTO execute(
+            String userId,
+            String userAddressId,
+            UpdateUserAddressDTO dto
+            ) {
 
-        User user = gateway.findById(dto.userAddressId())
+        User user = gateway.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Usuário não encontrado com ID: " + dto.userAddressId()
+                        "Usuário não encontrado com ID: " + userId
                 ));
 
         UserAddress address = user.getAddresses().stream()
-                .filter(a -> a.getId().equals(dto.userAddressId()))
+                .filter(a -> a.getId().equals(userAddressId))
                 .findFirst()
                 .orElseThrow(AddressNotBelongsToUserException::new);
 
@@ -33,7 +37,7 @@ public class UpdateUserAddressUseCase {
                 dto.complement()
         );
 
-        if (address.isPrimary()) {
+        if (dto.primary()) {
             user.definePrimaryAddress(address.getId());
         }
         gateway.save(user);

@@ -4,6 +4,8 @@ import br.com.foodhub.core.application.dto.restaurant.RestaurantRequestDTO;
 import br.com.foodhub.core.application.dto.restaurant.RestaurantResultDTO;
 import br.com.foodhub.core.application.port.restaurant.RestaurantGateway;
 import br.com.foodhub.core.application.port.user.UserGateway;
+import br.com.foodhub.core.application.usecase.address.FindOrCreateAddressBaseUseCase;
+import br.com.foodhub.core.domain.entity.address.AddressBase;
 import br.com.foodhub.core.domain.entity.restaurant.Restaurant;
 import br.com.foodhub.core.domain.entity.user.User;
 import br.com.foodhub.core.domain.exceptions.generic.BusinessRuleViolationException;
@@ -19,42 +21,39 @@ public class CreateRestaurantUseCase {
 
     private final RestaurantGateway gateway;
     private final UserGateway userGateway;
+    private final FindOrCreateAddressBaseUseCase findOrCreateAddressBaseUseCase;
 
-    public RestaurantResultDTO execute(RestaurantRequestDTO dto, String userId) {
+    public RestaurantResultDTO execute(String ownerId, RestaurantRequestDTO dto) {
 
-        User user = userGateway.findById(userId)
+        User user = userGateway.findById(ownerId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Usuário não encontrado")
                 );
 
-        if (!user.getUserType().isOwner()) {
+        user.ensureCanCreateRestaurant();
+
+        String normalizedCnpj = dto.cnpj().replaceAll("\\D", "");
+
+        if (gateway.existsByCnpj(normalizedCnpj)) {
             throw new BusinessRuleViolationException(
-                    "Apenas usuários OWNER podem criar restaurantes"
+                    "Já existe um restaurante cadastrado com este CNPJ"
             );
         }
+
+        AddressBase address = findOrCreateAddressBaseUseCase.execute(dto.cep());
 
         Restaurant restaurant = new Restaurant(
                 dto.businessName(),
                 dto.cnpj(),
                 dto.cuisineType(),
-                user.getId(),
-                dto.addressBaseId(),
+                ownerId,
+                address.getId(),
                 dto.numberStreet(),
                 dto.complement(),
                 List.of()
         );
         Restaurant saved = gateway.save(restaurant);
+        return RestaurantResultDTO.from(saved);
 
-        return new RestaurantResultDTO(
-                saved.getId(),
-                saved.getBusinessName(),
-                saved.getCnpj(),
-                saved.getCuisineType(),
-                saved.getOwnerId(),
-                saved.getAddressBaseId(),
-                saved.getNumberStreet(),
-                saved.getComplement(),
-                saved.getOpeningHours()
-        );
     }
 }

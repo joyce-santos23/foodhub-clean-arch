@@ -12,4 +12,8 @@ public interface RestaurantGateway {
     PageResultDTO<Restaurant> findAll(int page, int size);
 
     Optional<Restaurant> findById(String restaurantId);
+
+    void deleteById(String restaurantId);
+
+    boolean existsByCnpj(String cnpj);
 }

@@ -8,16 +8,23 @@ import br.com.foodhub.infra.persistence.mongodb.document.menu.MenuDocument;
 import br.com.foodhub.infra.persistence.mongodb.document.menu.MenuItemDocument;
 import br.com.foodhub.infra.persistence.mongodb.document.restaurant.OpeningHoursDocument;
 import br.com.foodhub.infra.persistence.mongodb.document.restaurant.RestaurantDocument;
-import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
-public abstract class RestaurantMapper {
+@Component
+public class RestaurantMapper {
 
     public Restaurant toDomain(RestaurantDocument doc) {
 
-        Restaurant restaurant = new Restaurant(
+        List<Menu> menus = doc.getMenus() == null
+                ? List.of()
+                : doc.getMenus().stream()
+                .map(this::mapMenu)
+                .toList();
+
+        return Restaurant.reconstitute(
+                doc.getId(),
                 doc.getBusinessName(),
                 doc.getCnpj(),
                 doc.getCuisineType(),
@@ -25,21 +32,36 @@ public abstract class RestaurantMapper {
                 doc.getAddressBaseId(),
                 doc.getNumberStreet(),
                 doc.getComplement(),
-                mapOpeningHours(doc.getOpeningHours())
+                mapOpeningHours(doc.getOpeningHours()),
+                menus
         );
-        setId(restaurant, doc.getId());
-
-        if (doc.getMenus() != null) {
-            for (MenuDocument md : doc.getMenus()) {
-                Menu menu = mapMenu(md);
-                restaurant.addMenu(menu);
-            }
-        }
-
-        return restaurant;
     }
 
-    public abstract RestaurantDocument toDocument(Restaurant restaurant);
+    protected Menu mapMenu(MenuDocument md) {
+
+        List<MenuItem> items = md.getItems() == null
+                ? List.of()
+                : md.getItems().stream()
+                .map(this::mapMenuItem)
+                .toList();
+
+        return Menu.reconstitute(
+                md.getId(),
+                md.getName(),
+                items
+        );
+    }
+
+    protected MenuItem mapMenuItem(MenuItemDocument mi) {
+        return MenuItem.reconstitute(
+                mi.getId(),
+                mi.getName(),
+                mi.getDescription(),
+                mi.getPrice(),
+                mi.isInRestaurantOnly(),
+                mi.getPhotograph()
+        );
+    }
 
     protected List<OpeningHours> mapOpeningHours(List<OpeningHoursDocument> docs) {
         if (docs == null) return List.of();
@@ -54,33 +76,68 @@ public abstract class RestaurantMapper {
                 .toList();
     }
 
-    protected Menu mapMenu(MenuDocument md) {
-        Menu menu = new Menu(md.getName());
-        setId(menu, md.getId());
+    public RestaurantDocument toDocument(Restaurant restaurant) {
+        if (restaurant == null) return null;
 
-        if (md.getItems() != null) {
-            for (MenuItemDocument mi : md.getItems()) {
-                MenuItem item = new MenuItem(
-                        mi.getName(),
-                        mi.getDescription(),
-                        mi.getPrice(),
-                        mi.isInRestaurantOnly(),
-                        mi.getPhotograph()
-                );
-                setId(item, mi.getId());
-                menu.addItem(item);
-            }
+        RestaurantDocument doc = new RestaurantDocument();
+
+        doc.setId(restaurant.getId());
+        doc.setBusinessName(restaurant.getBusinessName());
+        doc.setCnpj(restaurant.getCnpj());
+        doc.setCuisineType(restaurant.getCuisineType());
+        doc.setOwnerId(restaurant.getOwnerId());
+        doc.setAddressBaseId(restaurant.getAddressBaseId());
+        doc.setNumberStreet(restaurant.getNumberStreet());
+        doc.setComplement(restaurant.getComplement());
+
+        // opening hours
+        if (restaurant.getOpeningHours() != null) {
+            doc.setOpeningHours(
+                    restaurant.getOpeningHours().stream()
+                            .map(oh -> new OpeningHoursDocument(
+                                    oh.getDayOfWeek(),
+                                    oh.getOpenTime(),
+                                    oh.getCloseTime(),
+                                    oh.isClosed()
+                            ))
+                            .toList()
+            );
         }
-        return menu;
+
+        // menus
+        if (restaurant.getMenus() != null) {
+            doc.setMenus(
+                    restaurant.getMenus().stream()
+                            .map(menu -> {
+                                MenuDocument md = new MenuDocument();
+                                md.setId(menu.getId());
+                                md.setName(menu.getName());
+
+                                if (menu.getItems() != null) {
+                                    md.setItems(
+                                            menu.getItems().stream()
+                                                    .map(item -> new MenuItemDocument(
+                                                            item.getId(),
+                                                            item.getName(),
+                                                            item.getDescription(),
+                                                            item.getPrice(),
+                                                            item.isInRestaurantOnly(),
+                                                            item.getPhotograph()
+                                                    ))
+                                                    .toList()
+                                    );
+                                }
+
+                                return md;
+                            })
+                            .toList()
+            );
+        }
+
+        return doc;
     }
 
-    protected void setId(Object entity, String id) {
-        try {
-            var field = entity.getClass().getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(entity, id);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set id on entity", e);
-        }
-    }
 }
+
+
+

@@ -8,11 +8,11 @@ import br.com.foodhub.core.domain.entity.user.UserType;
 import br.com.foodhub.infra.persistence.mongodb.document.user.UserAddressDocument;
 import br.com.foodhub.infra.persistence.mongodb.document.user.UserDocument;
 import br.com.foodhub.infra.persistence.mongodb.document.user.UserRestaurantDocument;
-import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public abstract class UserMapper {
+@Component
+public class UserMapper {
 
     @Autowired
     protected UserTypeGateway gateway;
@@ -22,26 +22,26 @@ public abstract class UserMapper {
         UserType userType = gateway.findById((doc.getUserTypeId()))
                 .orElseThrow();
 
-        User user = new User(
+        User user = User.reconstitute(
+                doc.getId(),
                 doc.getName(),
                 doc.getEmail(),
                 doc.getPhone(),
+                doc.getCpf(),
                 doc.getPassword(),
-                userType,
-                null
+                userType
         );
-        setId(user, doc.getId());
 
         if(doc.getAddresses() != null) {
             for ( UserAddressDocument ad : doc.getAddresses()) {
-                UserAddress ua = new UserAddress(
+                UserAddress ua = UserAddress.reconstitute(
+                        ad.getId(),
                         user.getId(),
                         ad.getAddressBaseId(),
                         ad.getNumber(),
                         ad.getComplement(),
                         ad.isPrimary()
                 );
-                setId(ua, ad.getId());
                 user.addAddress(ua);
             }
         }
@@ -53,7 +53,6 @@ public abstract class UserMapper {
                         rd.getRestaurantId(),
                         rd.getUserTypeId()
                 );
-                setId(ur, rd.getId());
                 user.addRestaurant(ur);
             }
         }
@@ -61,17 +60,47 @@ public abstract class UserMapper {
         return user;
     }
 
-    public abstract UserDocument toDocument(User user);
+    public UserDocument toDocument(User user) {
+        UserDocument doc = new UserDocument();
 
-    protected void setId(Object target, String id) {
-        try {
-            var field = target.getClass().getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(target, id);
-        } catch (Exception e) {
-            throw new IllegalStateException("Erro ao setar ID via reflexão", e);
+        doc.setId(user.getId());
+        doc.setName(user.getName());
+        doc.setEmail(user.getEmail());
+        doc.setPhone(user.getPhone());
+        doc.setCpf(user.getCpf());
+        doc.setPassword(user.getPassword());
+
+        // 🔥 ESSENCIAL
+        doc.setUserTypeId(user.getUserType().getId());
+
+        // addresses
+        if (user.getAddresses() != null) {
+            doc.setAddresses(
+                    user.getAddresses().stream()
+                            .map(a -> new UserAddressDocument(
+                                    a.getId(),
+                                    a.getAddressId(),
+                                    a.getNumber(),
+                                    a.getComplement(),
+                                    a.isPrimary()
+                            ))
+                            .toList()
+            );
         }
+
+        // restaurants
+        if (user.getRestaurants() != null) {
+            doc.setRestaurants(
+                    user.getRestaurants().stream()
+                            .map(r -> new UserRestaurantDocument(
+                                    r.getRestaurantId(),
+                                    r.getUserTypeId()
+                            ))
+                            .toList()
+            );
+        }
+
+        return doc;
     }
-
-
 }
+

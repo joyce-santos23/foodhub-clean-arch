@@ -14,13 +14,8 @@ public class ListUserTypeUseCase {
     private final UserTypeGateway gateway;
 
     public List<UserTypeResultDTO> execute() {
-
         return gateway.findAll().stream()
-                .map(type -> new UserTypeResultDTO(
-                        type.getId(),
-                        type.getName(),
-                        type.isRestaurantRelated()
-                ))
+                .map(UserTypeResultDTO::from)
                 .toList();
     }
 }

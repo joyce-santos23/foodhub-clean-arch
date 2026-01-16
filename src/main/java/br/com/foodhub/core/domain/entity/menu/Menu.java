@@ -3,10 +3,12 @@ package br.com.foodhub.core.domain.entity.menu;
 import br.com.foodhub.core.domain.exceptions.generic.DomainException;
 import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceConflictException;
+import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class Menu {
@@ -15,8 +17,19 @@ public class Menu {
     private List<MenuItem> items;
 
     public Menu(String name) {
+        this.id = UUID.randomUUID().toString();
         this.name = require(name, "Nome do menu");
         this.items = new ArrayList<>();
+    }
+
+    private Menu(String id, String name, List<MenuItem> items) {
+        this.id = id;
+        this.name = name;
+        this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
+    }
+
+    public static Menu reconstitute(String id, String name, List<MenuItem> items) {
+        return new Menu(id, name, items);
     }
 
     /* =========================
@@ -27,7 +40,7 @@ public class Menu {
         require(item, "Item do menu");
 
         boolean exists = items.stream()
-                .anyMatch(i -> i.getName().equalsIgnoreCase(item.getName()));
+                .anyMatch(i -> i.equals(item));
 
         if (exists) {
             throw new ResourceConflictException(
@@ -56,7 +69,7 @@ public class Menu {
                 .filter(item -> item.getId().equals(itemId))
                 .findFirst()
                 .orElseThrow(() ->
-                        new DomainException("Item não pertence ao menu")
+                        new ResourceNotFoundException("Item não encontrado com o id informado!")
                 );
     }
 

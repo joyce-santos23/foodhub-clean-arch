@@ -1,6 +1,7 @@
 package br.com.foodhub.core.application.usecase.userrestaurant;
 
 import br.com.foodhub.core.application.dto.userrestaurant.LinkUserToRestaurantDTO;
+import br.com.foodhub.core.application.dto.userrestaurant.UserRestaurantResultDTO;
 import br.com.foodhub.core.application.port.restaurant.RestaurantGateway;
 import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.application.port.user.UserTypeGateway;
@@ -21,9 +22,9 @@ public class LinkUserToRestaurantUseCase {
     private final RestaurantGateway restaurantGateway;
     private final UserTypeGateway userTypeGateway;
 
-    public void execute(LinkUserToRestaurantDTO dto) {
+    public UserRestaurantResultDTO execute(String userId, LinkUserToRestaurantDTO dto) {
 
-        User user = userGateway.findById(dto.userId())
+        User user = userGateway.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Usuário não encontrado")
                 );
@@ -39,7 +40,9 @@ public class LinkUserToRestaurantUseCase {
                 );
 
         if (!userType.isRestaurantRelated()) {
-            throw new BusinessRuleViolationException("Este tipo de usuário não pode ser vinculado a um restaurante.");
+            throw new BusinessRuleViolationException(
+                    "Este tipo de usuário não pode ser vinculado a um restaurante."
+            );
         }
 
         if (user.isLinkedToRestaurant(restaurant.getId())) {
@@ -48,13 +51,24 @@ public class LinkUserToRestaurantUseCase {
             );
         }
 
-        UserRestaurant link = new UserRestaurant(
-                user.getId(),
-                restaurant.getId(),
-                userType.getId()
+        // cria o vínculo
+        user.addRestaurant(
+                new UserRestaurant(
+                        user.getId(),
+                        restaurant.getId(),
+                        userType.getId()
+                )
         );
-        user.addRestaurant(link);
-        userGateway.save(user);
+
+        User savedUser = userGateway.save(user);
+
+        UserRestaurant savedLink = savedUser.getRestaurants().stream()
+                .filter(r -> r.getRestaurantId().equals(restaurant.getId()))
+                .findFirst()
+                .orElseThrow();
+
+        return UserRestaurantResultDTO.from(user.getId(), savedLink);
 
     }
 }
+

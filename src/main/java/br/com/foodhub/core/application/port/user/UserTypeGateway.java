@@ -13,7 +13,7 @@ public interface UserTypeGateway {
 
     List<UserType> findAll();
 
-    boolean existsByUserTypeId(String userTypeId);
-
     void delete(String userTypeId);
+
+    Optional<UserType> findByName(String owner);
 }

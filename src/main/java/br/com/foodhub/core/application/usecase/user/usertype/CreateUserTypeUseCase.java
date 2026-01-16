@@ -19,10 +19,6 @@ public class CreateUserTypeUseCase {
 
         UserType saved = gateway.save(userType);
 
-        return new UserTypeResultDTO(
-                saved.getId(),
-                saved.getName(),
-                saved.isRestaurantRelated()
-        );
+        return UserTypeResultDTO.from(saved);
     }
 }

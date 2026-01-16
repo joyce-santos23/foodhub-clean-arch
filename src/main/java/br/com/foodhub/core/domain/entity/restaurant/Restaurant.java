@@ -6,8 +6,11 @@ import br.com.foodhub.core.domain.exceptions.generic.DomainException;
 import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
 import br.com.foodhub.core.domain.exceptions.restaurant.InvalidCnpjException;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +26,6 @@ public class Restaurant {
     private String complement;
     private List<OpeningHours> openingHours;
     private List<Menu> menus;
-    private boolean active;
 
     public Restaurant(
             String businessName,
@@ -44,7 +46,56 @@ public class Restaurant {
         this.complement = complement;
         this.openingHours = openingHours != null ? new ArrayList<>(openingHours) : new ArrayList<>();
         this.menus = new ArrayList<>();
-        this.active = true;
+    }
+
+    private Restaurant(
+            String id,
+            String businessName,
+            String cnpj,
+            String cuisineType,
+            String ownerId,
+            String addressBaseId,
+            String numberStreet,
+            String complement,
+            List<OpeningHours> openingHours,
+            List<Menu> menus
+    ) {
+        this.id = id;
+        this.businessName = businessName;
+        this.cnpj = cnpj;
+        this.cuisineType = cuisineType;
+        this.ownerId = ownerId;
+        this.addressBaseId = addressBaseId;
+        this.numberStreet = numberStreet;
+        this.complement = complement;
+        this.openingHours = openingHours != null ? new ArrayList<>(openingHours) : new ArrayList<>();
+        this.menus = menus != null ? new ArrayList<>(menus) : new ArrayList<>();
+    }
+
+    public static Restaurant reconstitute(
+            String id,
+            String businessName,
+            String cnpj,
+            String cuisineType,
+            String ownerId,
+            String addressBaseId,
+            String numberStreet,
+            String complement,
+            List<OpeningHours> openingHours,
+            List<Menu> menus
+    ) {
+        return new Restaurant(
+                id,
+                businessName,
+                cnpj,
+                cuisineType,
+                ownerId,
+                addressBaseId,
+                numberStreet,
+                complement,
+                openingHours,
+                menus
+        );
     }
 
     /* =========================
@@ -61,15 +112,6 @@ public class Restaurant {
         this.cuisineType = require(cuisineType, "Tipo de cozinha");
         this.numberStreet = require(numberStreet, "Número");
         this.complement = complement;
-    }
-
-    public void deactivate() {
-        if (!this.active) {
-            throw new BusinessRuleViolationException(
-                    "Restaurante já está desativado"
-            );
-        }
-        this.active = false;
     }
 
     public void addMenu(Menu menu) {
@@ -109,13 +151,25 @@ public class Restaurant {
                 );
     }
 
-    public void changeOpeningHours(List<OpeningHours> openingHours) {
-        this.openingHours.clear();
-        if (openingHours != null) {
-            this.openingHours.addAll(openingHours);
-        }
-    }
+    public void changeOpeningHours(
+            DayOfWeek dayOfWeek,
+            LocalTime openTime,
+            LocalTime closeTime,
+            boolean closed
+    ) {
+        // remove o horário do dia, se existir
+        openingHours.removeIf(oh -> oh.getDayOfWeek().equals(dayOfWeek));
 
+        // adiciona o novo VO
+        openingHours.add(
+                new OpeningHours(
+                        dayOfWeek,
+                        openTime,
+                        closeTime,
+                        closed
+                )
+        );
+    }
 
     /* =========================
        Validações internas

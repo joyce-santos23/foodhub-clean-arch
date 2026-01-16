@@ -3,6 +3,7 @@ package br.com.foodhub.infra.gateway.usertype;
 import br.com.foodhub.core.application.port.user.UserTypeGateway;
 import br.com.foodhub.core.domain.entity.user.UserType;
 import br.com.foodhub.infra.persistence.mongodb.mapper.usertype.UserTypeMapper;
+import br.com.foodhub.infra.persistence.mongodb.repository.user.UserMongoRepository;
 import br.com.foodhub.infra.persistence.mongodb.repository.usertype.UserTypeMongoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class UserTypeGatewayImpl implements UserTypeGateway {
 
     private final UserTypeMongoRepository repository;
+    UserMongoRepository userMongoRepository;
     private final UserTypeMapper mapper;
 
     @Override
@@ -41,12 +43,13 @@ public class UserTypeGatewayImpl implements UserTypeGateway {
     }
 
     @Override
-    public boolean existsByUserTypeId(String userTypeId) {
-        return repository.existsById(userTypeId);
+    public void delete(String userTypeId) {
+        repository.deleteById(userTypeId);
     }
 
     @Override
-    public void delete(String userTypeId) {
-        repository.deleteById(userTypeId);
+    public Optional<UserType> findByName(String owner) {
+        return repository.findByName(owner)
+                .map(mapper::toDomain);
     }
 }

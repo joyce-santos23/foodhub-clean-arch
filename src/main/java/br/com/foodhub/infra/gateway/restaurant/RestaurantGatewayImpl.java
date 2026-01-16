@@ -49,4 +49,14 @@ public class RestaurantGatewayImpl implements RestaurantGateway {
         return repository.findById(restaurantId)
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public void deleteById(String restaurantId) {
+        repository.deleteById(restaurantId);
+    }
+
+    @Override
+    public boolean existsByCnpj(String cnpj) {
+        return repository.existsByCnpj(cnpj);
+    }
 }

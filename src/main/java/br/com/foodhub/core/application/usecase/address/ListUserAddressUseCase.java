@@ -15,10 +15,10 @@ public class ListUserAddressUseCase {
 
     private final UserGateway gateway;
 
-    public List<UserAddressResultDTO> execute(UserAddressResultDTO dto) {
+    public List<UserAddressResultDTO> execute(String userId) {
 
-        User user = gateway.findById(dto.user())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + dto.user()));
+        User user = gateway.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + userId));
 
         return user.getAddresses().stream()
                 .map(address -> new UserAddressResultDTO(

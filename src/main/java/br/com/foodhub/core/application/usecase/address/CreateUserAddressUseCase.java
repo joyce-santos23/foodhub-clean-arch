@@ -17,9 +17,9 @@ public class CreateUserAddressUseCase {
     private final FindOrCreateAddressBaseUseCase findOrCreateAddressBaseUseCase;
     private final UserGateway userGateway;
 
-    public UserAddressResultDTO execute(UserAddressDTO requestDTO) {
-        User user = userGateway.findById(requestDTO.userId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + requestDTO.userId()));
+    public UserAddressResultDTO execute(String userId, UserAddressDTO requestDTO) {
+        User user = userGateway.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
 
         AddressBase addressBase = findOrCreateAddressBaseUseCase.execute(requestDTO.cep());
 

@@ -22,8 +22,6 @@ public class UserDocument {
     private String phone;
     private String cpf;
     private String password;
-
-    // reference
     private String userTypeId;
 
     // embedded

@@ -1,5 +1,6 @@
 package br.com.foodhub.core.application.usecase.user.usertype;
 
+import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.application.port.user.UserTypeGateway;
 import br.com.foodhub.core.domain.entity.user.UserType;
 import br.com.foodhub.core.domain.exceptions.generic.BusinessRuleViolationException;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class DeleteUserTypeUseCase {
 
     private final UserTypeGateway gateway;
+    private final UserGateway userGateway;
 
     public void execute(String userTypeId) {
 
@@ -24,7 +26,7 @@ public class DeleteUserTypeUseCase {
             );
         }
 
-        if (gateway.existsByUserTypeId(userTypeId)) {
+        if (userGateway.existsUserWithUserType(userTypeId)) {
             throw new BusinessRuleViolationException("Não é permitido excluir tipos de usuário vinculados a usuários."
             );
         }

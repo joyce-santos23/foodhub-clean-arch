@@ -17,4 +17,6 @@ public interface UserGateway {
     Optional<User> findById(String id);
 
     PageResultDTO<User> findAll(int page, int size);
+
+    boolean existsUserWithUserType(String userTypeId);
 }

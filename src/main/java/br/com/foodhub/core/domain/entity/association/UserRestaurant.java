@@ -5,10 +5,10 @@ import lombok.Getter;
 
 @Getter
 public class UserRestaurant {
-    private String id;
-    private String userId;
-    private String restaurantId;
-    private String userTypeId;
+
+    private final String userId;
+    private final String restaurantId;
+    private final String userTypeId;
 
     public UserRestaurant(
             String userId,

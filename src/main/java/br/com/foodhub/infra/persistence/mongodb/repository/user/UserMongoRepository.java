@@ -9,4 +9,6 @@ public interface UserMongoRepository extends MongoRepository<UserDocument, Strin
     boolean existsByPhone(String phone);
 
     boolean existsByCpf(String cpf);
+
+    boolean existsByUserTypeId(String userTypeId);
 }

@@ -29,4 +29,10 @@ public class AddressBaseGatewayImpl implements AddressBaseGateway {
 
         return mapper.toDomain(saved);
     }
+
+    @Override
+    public Optional<AddressBase> findById(String s) {
+        return repository.findById(s)
+                .map(mapper::toDomain);
+    }
 }

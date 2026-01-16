@@ -2,14 +2,15 @@ package br.com.foodhub.infra.persistence.mongodb.mapper.address;
 
 import br.com.foodhub.core.domain.entity.address.AddressBase;
 import br.com.foodhub.infra.persistence.mongodb.document.address.AddressBaseDocument;
-import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public abstract class AddressBaseMapper {
+@Component
+public class AddressBaseMapper {
 
     public AddressBase toDomain(AddressBaseDocument doc) {
 
-        AddressBase address = new AddressBase(
+        AddressBase address = AddressBase.reconstitute(
+                doc.getId(),
                 doc.getCep(),
                 doc.getStreet(),
                 doc.getNeighborhood(),
@@ -17,19 +18,23 @@ public abstract class AddressBaseMapper {
                 doc.getState(),
                 doc.getCountry()
         );
-        setId(address, doc.getId());
         return address;
     }
 
-    public abstract AddressBaseDocument toDocument(AddressBase domain);
+    public AddressBaseDocument toDocument(AddressBase domain) {
+        if (domain == null) return null;
 
-    protected void setId(AddressBase address, String id) {
-        try {
-            var field = AddressBase.class.getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(address, id);
-        } catch (Exception e) {
-            throw new IllegalStateException("Erro ao setar id do addressBase ", e);
-        }
+        AddressBaseDocument doc = new AddressBaseDocument();
+        doc.setId(domain.getId());
+        doc.setCep(domain.getCep());
+        doc.setStreet(domain.getStreet());
+        doc.setNeighborhood(domain.getNeighborhood());
+        doc.setCity(domain.getCity());
+        doc.setState(domain.getState());
+        doc.setCountry(domain.getCountry());
+
+        return doc;
     }
+
+
 }

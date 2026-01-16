@@ -63,4 +63,9 @@ public class UserGatewayImpl implements UserGateway {
                 result.getTotalPages()
         );
     }
+
+    @Override
+    public boolean existsUserWithUserType(String userTypeId) {
+        return repository.existsByUserTypeId(userTypeId);
+    }
 }

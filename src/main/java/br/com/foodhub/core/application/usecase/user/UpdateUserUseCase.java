@@ -4,7 +4,6 @@ import br.com.foodhub.core.application.dto.user.UpdateUserDTO;
 import br.com.foodhub.core.application.dto.user.UserResultDTO;
 import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.domain.entity.user.User;
-import br.com.foodhub.core.domain.entity.user.UserProfile;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceConflictException;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -49,20 +48,9 @@ public class UpdateUserUseCase {
             }
         }
 
-        if (dto.customFields() != null) {
-            user.updateProfile(new UserProfile(dto.customFields()));
-        }
+        User saved = gateway.save(user);
+        return UserResultDTO.from(saved);
 
-        UserResultDTO saved = gateway.save(user);
 
-        return new UserResultDTO(
-                saved.id(),
-                saved.name(),
-                saved.email(),
-                saved.phone(),
-                saved.cpf(),
-                saved.userTypeId(),
-                saved.attributes()
-        );
     }
 }
