@@ -29,6 +29,38 @@ public class AddressBase {
         this.country = require(country, "País");
     }
 
+    private AddressBase(
+            String id,
+            String cep,
+            String street,
+            String neighborhood,
+            String city,
+            String state,
+            String country
+    ) {
+        this.id = id;
+        this.cep = cep;
+        this.street = street;
+        this.neighborhood = neighborhood;
+        this.city = city;
+        this.state = state;
+        this.country = country;
+    }
+
+    public static AddressBase reconstitute(
+            String id,
+            String cep,
+            String street,
+            String neighborhood,
+            String city,
+            String state,
+            String country
+    ) {
+        return new AddressBase(
+                id, cep, street, neighborhood, city, state, country
+        );
+    }
+
     private String normalizeCep(String cep) {
         return cep.replaceAll("\\D", "");
     }

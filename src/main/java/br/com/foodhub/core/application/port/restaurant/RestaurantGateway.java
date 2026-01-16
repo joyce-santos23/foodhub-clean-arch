@@ -9,7 +9,11 @@ import java.util.Optional;
 public interface RestaurantGateway {
     Restaurant save(Restaurant restaurant);
 
-    PageResultDTO<Restaurant> findAll(PageRequestDTO dto);
+    PageResultDTO<Restaurant> findAll(int page, int size);
 
     Optional<Restaurant> findById(String restaurantId);
+
+    void deleteById(String restaurantId);
+
+    boolean existsByCnpj(String cnpj);
 }

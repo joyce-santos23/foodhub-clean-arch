@@ -15,21 +15,13 @@ public class ListAllRestaurantUseCase {
     private final RestaurantGateway gateway;
 
     public PageResultDTO<RestaurantResultDTO> execute(PageRequestDTO dto) {
-        PageResultDTO<Restaurant> page = gateway.findAll(dto);
+
+        PageResultDTO<Restaurant> page =
+                gateway.findAll(dto.page(), dto.size());
 
         return new PageResultDTO<>(
                 page.content().stream()
-                        .map(restaurant -> new RestaurantResultDTO(
-                                restaurant.getId(),
-                                restaurant.getBusinessName(),
-                                restaurant.getCnpj(),
-                                restaurant.getCuisineType(),
-                                restaurant.getOwnerId(),
-                                restaurant.getAddressBaseId(),
-                                restaurant.getNumberStreet(),
-                                restaurant.getComplement(),
-                                restaurant.getOpeningHours()
-                        ))
+                        .map(RestaurantResultDTO::from)
                         .toList(),
                 page.page(),
                 page.size(),
@@ -38,3 +30,4 @@ public class ListAllRestaurantUseCase {
         );
     }
 }
+

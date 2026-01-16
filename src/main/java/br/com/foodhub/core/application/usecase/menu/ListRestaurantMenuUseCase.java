@@ -27,24 +27,7 @@ public class ListRestaurantMenuUseCase {
                 );
 
         return restaurant.getMenus().stream()
-                .map(this::toMenuResult)
+                .map(MenuWithItemsResultDTO::from)
                 .toList();
-    }
-
-    private MenuWithItemsResultDTO toMenuResult(Menu menu) {
-        return new MenuWithItemsResultDTO(
-                menu.getId(),
-                menu.getName(),
-                menu.getItems().stream()
-                        .map(item -> new MenuItemResultDTO(
-                                item.getId(),
-                                item.getName(),
-                                item.getDescription(),
-                                item.getPrice(),
-                                item.isInRestaurantOnly(),
-                                item.getPhotograph()
-                        ))
-                        .toList()
-        );
     }
 }

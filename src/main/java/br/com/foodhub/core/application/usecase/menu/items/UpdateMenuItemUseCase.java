@@ -1,11 +1,13 @@
 package br.com.foodhub.core.application.usecase.menu.items;
 
+import br.com.foodhub.core.application.dto.menu.items.MenuItemRequestDTO;
 import br.com.foodhub.core.application.dto.menu.items.MenuItemResultDTO;
-import br.com.foodhub.core.application.dto.menu.items.UpdateMenuItemDTO;
 import br.com.foodhub.core.application.port.restaurant.RestaurantGateway;
+import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.domain.entity.menu.Menu;
 import br.com.foodhub.core.domain.entity.menu.MenuItem;
 import br.com.foodhub.core.domain.entity.restaurant.Restaurant;
+import br.com.foodhub.core.domain.entity.user.User;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,15 +17,26 @@ import org.springframework.stereotype.Service;
 public class UpdateMenuItemUseCase {
 
     private final RestaurantGateway gateway;
+    private final UserGateway userGateway;
 
-    public MenuItemResultDTO execute(UpdateMenuItemDTO dto) {
+    public MenuItemResultDTO execute(
+            String userId,
+            String restaurantId,
+            String menuId,
+            String menuItemId,
+            MenuItemRequestDTO dto) {
 
-        Restaurant restaurant = gateway.findById(dto.restaurantId())
+        User user = userGateway.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Restaurant restaurant = gateway.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
 
-        Menu menu = restaurant.getMenuById(dto.menuId());
+        user.ensureCanManageRestaurant(restaurant);
 
-        MenuItem item = menu.getItemById(dto.menuItemId());
+        Menu menu = restaurant.getMenuById(menuId);
+
+        MenuItem item = menu.getItemById(menuItemId);
         item.update(
                 dto.name(),
                 dto.description(),

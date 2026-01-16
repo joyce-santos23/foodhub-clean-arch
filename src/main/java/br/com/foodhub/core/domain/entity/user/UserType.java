@@ -6,33 +6,38 @@ import lombok.Getter;
 
 @Getter
 public class UserType {
+
     private String id;
     private String name;
-    private boolean restaurantRelated;
+
+    private UserType(String id, String name) {
+        this.id = id;
+        this.name = require(name, "Nome do tipo de usuário").trim().toUpperCase();
+    }
 
     public UserType(String name) {
-        this.name = require(name, "Nome do tipo de usuário");
-        this.restaurantRelated = defineRestaurantRelated(name);
+        this(null, name);
+    }
+
+    public static UserType reconstitute(String id, String name) {
+        return new UserType(id, name);
+    }
+
+    public boolean isRestaurantRelated() {
+        return !("CUSTOMER".equals(name) || "OWNER".equals(name));
     }
 
     public void rename(String newName) {
-
         if (isSystemType()) {
             throw new BusinessRuleViolationException(
                     "Não é permitido alterar tipos de usuário do sistema"
             );
         }
-
         this.name = require(newName, "Nome do tipo de usuário");
-        this.restaurantRelated = defineRestaurantRelated(this.name);
     }
 
     public boolean isSystemType() {
         return "OWNER".equals(name) || "CUSTOMER".equals(name);
-    }
-
-    private boolean defineRestaurantRelated(String name) {
-        return !("CUSTOMER".equals(name) || "OWNER".equals(name));
     }
 
     public boolean isOwner() { return "OWNER".equals(name); }
@@ -45,3 +50,4 @@ public class UserType {
         return value;
     }
 }
+

@@ -2,11 +2,16 @@ package br.com.foodhub.core.domain.entity.menu;
 
 import br.com.foodhub.core.domain.exceptions.generic.BusinessRuleViolationException;
 import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MenuItem {
     private String id;
+    @EqualsAndHashCode.Include
     private String name;
     private String description;
     private Double price;
@@ -20,11 +25,46 @@ public class MenuItem {
             boolean inRestaurantOnly,
             String photograph
     ) {
-        this.name = require(name, "Nome do item");
+        this.id = UUID.randomUUID().toString();
+        this.name = require(name, "Nome do item").trim().toLowerCase();
         this.description = description;
         this.price = validatePrice(require(price, "Preço"));
         this.inRestaurantOnly = inRestaurantOnly;
         this.photograph = normalizeOptional(photograph);
+    }
+
+    private MenuItem(
+            String id,
+            String name,
+            String description,
+            Double price,
+            boolean inRestaurantOnly,
+            String photograph
+    ) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.inRestaurantOnly = inRestaurantOnly;
+        this.photograph = photograph;
+    }
+
+    public static MenuItem reconstitute(
+            String id,
+            String name,
+            String description,
+            Double price,
+            boolean inRestaurantOnly,
+            String photograph
+    ) {
+        return new MenuItem(
+                id,
+                name,
+                description,
+                price,
+                inRestaurantOnly,
+                photograph
+        );
     }
 
     /* =========================

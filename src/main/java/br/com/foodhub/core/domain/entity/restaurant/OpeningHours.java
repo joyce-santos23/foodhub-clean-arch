@@ -35,7 +35,7 @@ public class OpeningHours {
             this.closeTime = require(closeTime, "Fechamento");
 
             if (!openTime.isBefore(closeTime)) {
-                throw new InvalidOpeningHoursException("Hora de abertura inválida");
+                throw new InvalidOpeningHoursException("Horário de abertura deve ser anterior ao horário de fechamento");
             }
         }
     }

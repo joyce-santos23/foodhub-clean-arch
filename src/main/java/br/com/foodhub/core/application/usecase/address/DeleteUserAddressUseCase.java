@@ -1,6 +1,5 @@
 package br.com.foodhub.core.application.usecase.address;
 
-import br.com.foodhub.core.application.dto.address.DeleteUserAddressDTO;
 import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.domain.entity.user.User;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
@@ -12,15 +11,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DeleteUserAddressUseCase {
 
-    private UserGateway gateway;
+    private final UserGateway gateway;
 
-    public void execute(DeleteUserAddressDTO dto) {
+    public void execute(String userId, String userAddressId) {
 
-        User user = gateway.findById(dto.userId())
+        User user = gateway.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         boolean removed = user.getAddresses().removeIf(
-                address -> address.getId().equals(dto.userAddressId())
+                address -> address.getId().equals(userAddressId)
         );
 
         if (!removed) {

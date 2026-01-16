@@ -19,16 +19,7 @@ public class ListRestaurantByIdUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Restaurante não encontrado com o ID: " + restaurantId));
 
-        return new RestaurantResultDTO(
-                restaurant.getId(),
-                restaurant.getBusinessName(),
-                restaurant.getCnpj(),
-                restaurant.getCuisineType(),
-                restaurant.getOwnerId(),
-                restaurant.getAddressBaseId(),
-                restaurant.getNumberStreet(),
-                restaurant.getComplement(),
-                restaurant.getOpeningHours()
-        );
+        return RestaurantResultDTO.from(restaurant);
+
     }
 }

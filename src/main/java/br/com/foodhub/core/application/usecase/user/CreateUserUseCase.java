@@ -2,38 +2,40 @@ package br.com.foodhub.core.application.usecase.user;
 
 import br.com.foodhub.core.application.dto.user.UserRequestDTO;
 import br.com.foodhub.core.application.dto.user.UserResultDTO;
+import br.com.foodhub.core.application.dto.userrestaurant.UserRestaurantResultDTO;
+import br.com.foodhub.core.application.port.security.PasswordHasherGateway;
 import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.application.port.user.UserTypeGateway;
 import br.com.foodhub.core.domain.entity.user.User;
-import br.com.foodhub.core.domain.entity.user.UserProfile;
 import br.com.foodhub.core.domain.entity.user.UserType;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceConflictException;
 import br.com.foodhub.core.domain.exceptions.generic.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CreateUserUseCase {
     private final UserGateway userGateway;
     private final UserTypeGateway userTypeGateway;
+    private final PasswordHasherGateway passwordHasherGateway;
 
     public UserResultDTO execute(UserRequestDTO dto) {
 
         UserType userType = userTypeGateway.findById(dto.userTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de usuário inválido."));
 
-        UserProfile attributes = dto.customFields() != null && !dto.customFields().isEmpty()
-                ? new UserProfile(dto.customFields())
-                : UserProfile.empty();
+        String hashedPassword = passwordHasherGateway.hash(dto.password());
 
         User user = new User(
                 dto.name(),
                 dto.email(),
                 dto.phone(),
-                dto.password(),
-                userType,
-                attributes
+                hashedPassword,
+                userType
+
         );
 
         if (userGateway.existsByEmail(user.getEmail())) {
@@ -51,6 +53,10 @@ public class CreateUserUseCase {
             }
         }
 
-        return userGateway.save(user);
+        User saved = userGateway.save(user);
+
+        return UserResultDTO.from(saved);
+
+
     }
 }

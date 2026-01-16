@@ -1,6 +1,6 @@
 package br.com.foodhub.core.application.usecase.user.usertype;
 
-import br.com.foodhub.core.application.dto.user.usertype.UpdateUserTypeDTO;
+import br.com.foodhub.core.application.dto.user.usertype.UserTypeRequestDTO;
 import br.com.foodhub.core.application.dto.user.usertype.UserTypeResultDTO;
 import br.com.foodhub.core.application.port.user.UserTypeGateway;
 import br.com.foodhub.core.domain.entity.user.UserType;
@@ -14,20 +14,16 @@ public class UpdateUserTypeUseCase {
 
     private final UserTypeGateway gateway;
 
-    public UserTypeResultDTO execute(UpdateUserTypeDTO dto) {
+    public UserTypeResultDTO execute(String id, UserTypeRequestDTO dto) {
 
-        UserType type = gateway.findById(dto.id())
+        UserType type = gateway.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Tipo de usuário não encontrado com o ID: " + dto.id())
+                        "Tipo de usuário não encontrado com o ID: " + id)
                 );
         type.rename(dto.name());
 
         gateway.save(type);
 
-        return new UserTypeResultDTO(
-                type.getId(),
-                type.getName(),
-                type.isRestaurantRelated()
-        );
+        return UserTypeResultDTO.from(type);
     }
 }

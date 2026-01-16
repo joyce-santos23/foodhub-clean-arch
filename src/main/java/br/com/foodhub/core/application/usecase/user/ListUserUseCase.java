@@ -22,15 +22,8 @@ public class ListUserUseCase {
         PageResultDTO<User> page = gateway.findAll(dto.page(), dto.size());
 
         List<UserResultDTO> result = page.content().stream()
-                .map(user -> new UserResultDTO(
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail(),
-                        user.getPhone(),
-                        user.getCpf(),
-                        user.getUserType().getId(),
-                        (Map<String, Object>) user.getAttributes()
-                )).toList();
+                .map(UserResultDTO::from)
+                .toList();
 
         return new PageResultDTO<>(
                 result,
@@ -39,5 +32,6 @@ public class ListUserUseCase {
                 page.totalElements(),
                 page.totalPages()
         );
+
     }
 }

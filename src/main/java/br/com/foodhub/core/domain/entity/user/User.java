@@ -13,7 +13,6 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 public class User {
@@ -24,7 +23,6 @@ public class User {
     private String cpf;
     private String password;
     private UserType userType;
-    private UserProfile attributes;
     private List<UserAddress> addresses = new ArrayList<>();
     private List<UserRestaurant> restaurants = new ArrayList<>();
 
@@ -34,15 +32,31 @@ public class User {
             String email,
             String phone,
             String password,
-            UserType userType,
-            UserProfile attributes
+            UserType userType
     ) {
         this.name = require(name, "Name");
         this.email = normalizeEmail(require(email, "Email"));
         this.phone = require(phone, "Phone");
         this.password = require(password, "Password");
         this.userType = require(userType, "User Type");
-        this.attributes = attributes != null ? attributes : UserProfile.empty();
+    }
+
+    private User(String id, String name, String email, String phone, String cpf,
+                String password, UserType userType) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.cpf = cpf;
+        this.password = password;
+        this.userType = userType;
+        this.addresses = new ArrayList<>();
+        this.restaurants = new ArrayList<>();
+    }
+
+    public static User reconstitute(String id, String name, String email, String phone, String cpf,
+                                    String password, UserType userType) {
+        return new User(id, name, email, phone, cpf, password, userType);
     }
 
     /* =========================
@@ -118,6 +132,10 @@ public class User {
 
         require(address, "Endereço");
 
+        if (this.addresses.contains(address)) {
+            throw new ResourceConflictException("Endereço já cadastrado");
+        }
+
         if (address.isPrimary()) {
             unsetCurrentPrimary();
         }
@@ -161,11 +179,6 @@ public class User {
     public void changePhone(String phone) {
         this.phone = require(phone, "Telefone");
     }
-
-    public void updateProfile(UserProfile profile) {
-        this.attributes = Objects.requireNonNull(profile);
-    }
-
 
     /* =========================
        Utilidades de validação

@@ -1,6 +1,5 @@
 package br.com.foodhub.core.application.usecase.userrestaurant;
 
-import br.com.foodhub.core.application.dto.userrestaurant.UnlinkUserFromRestaurantDTO;
 import br.com.foodhub.core.application.port.restaurant.RestaurantGateway;
 import br.com.foodhub.core.application.port.user.UserGateway;
 import br.com.foodhub.core.domain.entity.restaurant.Restaurant;
@@ -17,25 +16,24 @@ public class UnlinkUserFromRestaurantUseCase {
     private final UserGateway userGateway;
     private final RestaurantGateway restaurantGateway;
 
-    public void execute(UnlinkUserFromRestaurantDTO dto) {
+    public void execute(String userId, String restaurantId) {
 
-        User user = userGateway.findById(dto.userId())
+        User user = userGateway.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Usuário não encontrado")
                 );
 
-        Restaurant restaurant = restaurantGateway.findById(dto.restaurantId())
+        Restaurant restaurant = restaurantGateway.findById(restaurantId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Restaurante não encontrado")
                 );
 
-        // 🔒 Regra: não pode remover o dono do restaurante
         if (restaurant.getOwnerId().equals(user.getId())) {
             throw new BusinessRuleViolationException(
                     "Não é possível remover o dono do restaurante"
             );
         }
-        user.removeRestaurantLink(restaurant.getId());
+        user.removeRestaurantLink(restaurantId);
         userGateway.save(user);
     }
 }
