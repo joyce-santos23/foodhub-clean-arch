@@ -8,7 +8,6 @@ public record UserRequestDTO(
         String phone,
         String cpf,
         String password,
-        String userTypeId,
-        Map<String, Object> customFields
+        String userTypeId
 ) {
 }

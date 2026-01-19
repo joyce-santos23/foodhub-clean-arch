@@ -12,9 +12,14 @@ import br.com.foodhub.core.domain.exceptions.user.InvalidEmailException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.net.URI;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -105,6 +110,34 @@ public class GlobalExceptionHandler {
                 "bean-validation-error"
         );
     }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ProblemDetail> handleMissingHeader(
+            MissingRequestHeaderException ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Requisição inválida");
+        problem.setDetail(ex.getMessage());
+        problem.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.badRequest().body(problem);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "Requisição inválida",
+                "Valor inválido para o parâmetro '" + ex.getName() + "'",
+                request,
+                "invalid-parameter"
+        );
+    }
+
+
 
     /* =======================
        500 — INTERNAL SERVER ERROR

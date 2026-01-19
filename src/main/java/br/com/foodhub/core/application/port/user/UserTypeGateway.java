@@ -16,4 +16,6 @@ public interface UserTypeGateway {
     void delete(String userTypeId);
 
     Optional<UserType> findByName(String owner);
+
+    boolean existsByName(String normalizedName);
 }

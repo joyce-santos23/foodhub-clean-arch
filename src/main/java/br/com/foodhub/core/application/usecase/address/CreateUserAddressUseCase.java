@@ -33,14 +33,7 @@ public class CreateUserAddressUseCase {
         user.addAddress(userAddress);
         userGateway.save(user);
 
-        return new UserAddressResultDTO(
-                userAddress.getId(),
-                userAddress.getUserId(),
-                userAddress.getAddressId(),
-                userAddress.isPrimary(),
-                userAddress.getNumber(),
-                userAddress.getComplement()
-        );
+        return UserAddressResultDTO.from(userAddress);
     }
 
 }
