@@ -45,13 +45,6 @@ public class CreateMenuItemUseCase {
         menu.addItem(item);
         gateway.save(restaurant);
 
-        return  new MenuItemResultDTO(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getPrice(),
-                item.isInRestaurantOnly(),
-                item.getPhotograph()
-        );
+        return  MenuItemResultDTO.from(item);
     }
 }

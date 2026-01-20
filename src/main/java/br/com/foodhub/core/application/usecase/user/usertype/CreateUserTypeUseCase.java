@@ -5,6 +5,7 @@ import br.com.foodhub.core.application.dto.user.usertype.UserTypeResultDTO;
 import br.com.foodhub.core.application.port.user.UserTypeGateway;
 import br.com.foodhub.core.domain.entity.user.UserType;
 import br.com.foodhub.core.domain.exceptions.generic.BusinessRuleViolationException;
+import br.com.foodhub.core.domain.exceptions.generic.RequiredFieldException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,9 @@ public class CreateUserTypeUseCase {
 
     public UserTypeResultDTO execute(UserTypeRequestDTO dto) {
 
+        if (dto.name() == null || dto.name().isBlank()) {
+            throw new RequiredFieldException("O nome não pode ser nulo");
+        }
         String normalizedName = dto.name().trim().toUpperCase();
 
         if (gateway.existsByName(normalizedName)) {

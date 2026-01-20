@@ -14,11 +14,11 @@ public record OpeningHoursResponsePayload(
 
         @Schema(example = "08:00")
         @JsonFormat(pattern = "HH:mm")
-        LocalTime openingTime,
+        String openingTime,
 
         @Schema(example = "18:00")
         @JsonFormat(pattern = "HH:mm")
-        LocalTime closingTime,
+        String closingTime,
 
         @Schema(example = "false")
         boolean closed

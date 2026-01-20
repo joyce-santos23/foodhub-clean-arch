@@ -1,0 +1,113 @@
+@startuml
+hide circle
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #FDFDFD
+  BorderColor #333333
+}
+
+' =====================
+' Collections
+' =====================
+
+entity "User (users)" as User {
+  _id : String
+  --
+  name : String
+  email : String
+  phone : String
+  cpf : String
+  password : String
+  userTypeId : String
+}
+
+entity "UserType (user_types)" as UserType {
+  _id : String
+  --
+  name : String
+  restaurantRelated : boolean
+}
+
+entity "Restaurant (restaurants)" as Restaurant {
+  _id : String
+  --
+  businessName : String
+  cnpj : String
+  cuisineType : String
+  ownerId : String
+  addressBaseId : String
+  numberStreet : String
+  complement : String
+}
+
+entity "AddressBase (address_base)" as AddressBase {
+  _id : String
+  --
+  cep : String
+  street : String
+  neighborhood : String
+  city : String
+  state : String
+  country : String
+}
+
+' =====================
+' Embedded Documents
+' =====================
+
+entity "UserAddress (embedded)" as UserAddress {
+  id : String
+  addressBaseId : String
+  number : String
+  complement : String
+  primary : boolean
+}
+
+entity "UserRestaurant (embedded)" as UserRestaurant {
+  restaurantId : String
+  userTypeId : String
+}
+
+entity "OpeningHours (embedded)" as OpeningHours {
+  dayOfWeek : DayOfWeek
+  openTime : LocalTime
+  closeTime : LocalTime
+  closed : boolean
+}
+
+entity "Menu (embedded)" as Menu {
+  id : String
+  name : String
+}
+
+entity "MenuItem (embedded)" as MenuItem {
+  id : String
+  name : String
+  description : String
+  price : Double
+  inRestaurantOnly : boolean
+  photograph : String
+}
+
+' =====================
+' Relationships
+' =====================
+
+' User aggregates
+User ||--o{ UserAddress : addresses
+User ||--o{ UserRestaurant : restaurants
+User }o--|| UserType : userTypeId
+
+' Restaurant aggregates
+Restaurant ||--o{ OpeningHours : openingHours
+Restaurant ||--o{ Menu : menus
+Menu ||--o{ MenuItem : items
+
+' Cross references
+UserRestaurant }o--|| Restaurant : restaurantId
+UserRestaurant }o--|| UserType : userTypeId
+
+UserAddress }o--|| AddressBase : addressBaseId
+Restaurant }o--|| AddressBase : addressBaseId
+
+@enduml

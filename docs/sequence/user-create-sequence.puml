@@ -1,0 +1,53 @@
+@startuml
+title Create User - Fluxo Principal
+
+actor Client
+
+participant UserController
+participant CreateUserUseCase
+participant UserTypeGateway
+participant PasswordHasherGateway
+participant UserGateway
+participant User
+participant UserType
+database MongoDB
+
+Client -> UserController : POST /users\nUserRequestPayload
+UserController -> CreateUserUseCase : execute(UserRequestDTO)
+
+CreateUserUseCase -> UserTypeGateway : findById(userTypeId)
+UserTypeGateway -> MongoDB : find userType
+MongoDB --> UserTypeGateway : UserTypeDocument
+UserTypeGateway --> CreateUserUseCase : UserType
+
+CreateUserUseCase -> PasswordHasherGateway : hash(password)
+PasswordHasherGateway --> CreateUserUseCase : hashedPassword
+
+CreateUserUseCase -> User : new User(name,email,phone,hashedPassword,userType)
+User -> User : validate email / phone
+
+alt CPF informado
+    CreateUserUseCase -> User : defineCpf(cpf)
+    User -> User : validate cpf
+end
+
+CreateUserUseCase -> UserGateway : existsByEmail(email)
+UserGateway --> CreateUserUseCase : boolean
+
+CreateUserUseCase -> UserGateway : existsByPhone(phone)
+UserGateway --> CreateUserUseCase : boolean
+
+alt CPF informado
+    CreateUserUseCase -> UserGateway : existsByCpf(cpf)
+    UserGateway --> CreateUserUseCase : boolean
+end
+
+CreateUserUseCase -> UserGateway : save(User)
+UserGateway -> MongoDB : insert user
+MongoDB --> UserGateway : UserDocument
+UserGateway --> CreateUserUseCase : User
+
+CreateUserUseCase --> UserController : UserResultDTO
+UserController --> Client : 201 CREATED\nUserResponsePayload
+
+@enduml

@@ -1,0 +1,52 @@
+@startuml
+title Create Restaurant - Fluxo Principal
+
+actor Client
+
+participant RestaurantController
+participant CreateRestaurantUseCase
+participant UserGateway
+participant RestaurantGateway
+participant FindOrCreateAddressBaseUseCase
+participant User
+participant Restaurant
+database MongoDB
+
+Client -> RestaurantController : POST /restaurants\nRestaurantRequestPayload
+RestaurantController -> CreateRestaurantUseCase : execute(ownerId, RestaurantRequestDTO)
+
+CreateRestaurantUseCase -> UserGateway : findById(ownerId)
+UserGateway -> MongoDB : find user
+MongoDB --> UserGateway : UserDocument
+UserGateway --> CreateRestaurantUseCase : User
+
+CreateRestaurantUseCase -> User : ensureCanCreateRestaurant()
+
+CreateRestaurantUseCase -> CreateRestaurantUseCase : normalize CNPJ
+
+CreateRestaurantUseCase -> RestaurantGateway : existsByCnpj(cnpj)
+RestaurantGateway -> MongoDB : find by cnpj
+MongoDB --> RestaurantGateway : boolean
+RestaurantGateway --> CreateRestaurantUseCase : exists?
+
+alt CNPJ já cadastrado
+    CreateRestaurantUseCase -> CreateRestaurantUseCase : throw BusinessRuleViolationException
+end
+
+
+CreateRestaurantUseCase -> FindOrCreateAddressBaseUseCase : execute(cep)
+FindOrCreateAddressBaseUseCase -> MongoDB : find or insert address_base
+MongoDB --> FindOrCreateAddressBaseUseCase : AddressBase
+FindOrCreateAddressBaseUseCase --> CreateRestaurantUseCase : AddressBase
+
+CreateRestaurantUseCase -> Restaurant : new Restaurant(businessName, cnpj, cuisineType, ownerId, addressId, number, complement)
+
+CreateRestaurantUseCase -> RestaurantGateway : save(Restaurant)
+RestaurantGateway -> MongoDB : insert restaurant
+MongoDB --> RestaurantGateway : RestaurantDocument
+RestaurantGateway --> CreateRestaurantUseCase : Restaurant
+
+CreateRestaurantUseCase --> RestaurantController : RestaurantResultDTO
+RestaurantController --> Client : 201 CREATED\nRestaurantResponsePayload
+
+@enduml

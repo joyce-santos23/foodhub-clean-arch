@@ -1,0 +1,55 @@
+@startuml
+title Link User to Restaurant - Fluxo Principal
+
+actor Client
+
+participant UserRestaurantController
+participant LinkUserToRestaurantUseCase
+participant UserGateway
+participant RestaurantGateway
+participant UserTypeGateway
+participant User
+participant Restaurant
+participant UserType
+database MongoDB
+
+Client -> UserRestaurantController : POST /users/{userId}/restaurants\nLinkUserToRestaurantRequestPayload
+UserRestaurantController -> LinkUserToRestaurantUseCase : execute(userId, LinkUserToRestaurantDTO)
+
+LinkUserToRestaurantUseCase -> UserGateway : findById(userId)
+UserGateway -> MongoDB : find user
+MongoDB --> UserGateway : UserDocument
+UserGateway --> LinkUserToRestaurantUseCase : User
+
+LinkUserToRestaurantUseCase -> RestaurantGateway : findById(restaurantId)
+RestaurantGateway -> MongoDB : find restaurant
+MongoDB --> RestaurantGateway : RestaurantDocument
+RestaurantGateway --> LinkUserToRestaurantUseCase : Restaurant
+
+LinkUserToRestaurantUseCase -> UserTypeGateway : findById(userTypeId)
+UserTypeGateway -> MongoDB : find userType
+MongoDB --> UserTypeGateway : UserTypeDocument
+UserTypeGateway --> LinkUserToRestaurantUseCase : UserType
+
+LinkUserToRestaurantUseCase -> UserType : isRestaurantRelated()
+
+alt Tipo de usuário não relacionado a restaurante
+    LinkUserToRestaurantUseCase -> LinkUserToRestaurantUseCase : throw BusinessRuleViolationException
+end
+
+LinkUserToRestaurantUseCase -> User : isLinkedToRestaurant(restaurantId)
+
+alt Usuário já vinculado ao restaurante
+    LinkUserToRestaurantUseCase -> LinkUserToRestaurantUseCase : throw BusinessRuleViolationException
+end
+
+LinkUserToRestaurantUseCase -> User : addRestaurant(UserRestaurant)
+LinkUserToRestaurantUseCase -> UserGateway : save(User)
+UserGateway -> MongoDB : update user
+MongoDB --> UserGateway : UserDocument
+UserGateway --> LinkUserToRestaurantUseCase : User
+
+LinkUserToRestaurantUseCase --> UserRestaurantController : UserRestaurantResultDTO
+UserRestaurantController --> Client : 201 CREATED\nUserRestaurantResponsePayload
+
+@enduml
