@@ -52,4 +52,9 @@ public class UserTypeGatewayImpl implements UserTypeGateway {
         return repository.findByName(owner)
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public boolean existsByName(String normalizedName) {
+        return repository.existsByName(normalizedName);
+    }
 }

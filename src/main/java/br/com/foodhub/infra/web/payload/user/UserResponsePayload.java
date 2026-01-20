@@ -7,6 +7,7 @@ import java.util.List;
 
 @Schema(description = "Resposta com dados do usuário")
 public record UserResponsePayload(
+        @Schema(example = "69697bfb4a50530b33363161")
         String id,
 
         @Schema(example = "João da Silva")

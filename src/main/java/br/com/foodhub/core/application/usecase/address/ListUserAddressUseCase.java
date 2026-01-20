@@ -21,14 +21,7 @@ public class ListUserAddressUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + userId));
 
         return user.getAddresses().stream()
-                .map(address -> new UserAddressResultDTO(
-                        address.getId(),
-                        address.getUserId(),
-                        address.getAddressId(),
-                        address.isPrimary(),
-                        address.getNumber(),
-                        address.getComplement()
-                ))
+                .map(UserAddressResultDTO::from)
                 .toList();
     }
 }

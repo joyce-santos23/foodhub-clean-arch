@@ -2,6 +2,7 @@ package br.com.foodhub.infra.web.payload.restaurant;
 
 import br.com.foodhub.core.domain.entity.restaurant.OpeningHours;
 import br.com.foodhub.infra.web.payload.address.AddressBaseResponsePayload;
+import br.com.foodhub.infra.web.payload.restaurant.openinghour.OpeningHoursResponsePayload;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -34,5 +35,5 @@ public record RestaurantResponsePayload(
         AddressBaseResponsePayload address,
 
         @Schema(description = "Horários de funcionamento do restaurante")
-        List<OpeningHours> openingHours
+        List<OpeningHoursResponsePayload> openingHours
 ) {}

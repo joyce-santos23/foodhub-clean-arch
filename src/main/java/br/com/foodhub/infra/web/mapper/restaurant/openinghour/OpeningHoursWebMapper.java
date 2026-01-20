@@ -28,8 +28,13 @@ public interface OpeningHoursWebMapper {
         );
     }
 
-    OpeningHoursResponsePayload toResponse(
-            OpeningHoursResultDTO dto
-    );
+    default OpeningHoursResponsePayload toResponse(OpeningHoursResultDTO dto) {
+        return new OpeningHoursResponsePayload(
+                dto.dayOfWeek(),
+                dto.openingTime() != null ? dto.openingTime().toString() : null,
+                dto.closingTime() != null ? dto.closingTime().toString() : null,
+                dto.closed()
+        );
+    }
 }
 

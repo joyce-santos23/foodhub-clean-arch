@@ -1,0 +1,34 @@
+@startuml
+title Create Menu - Fluxo Completo
+
+actor Client
+
+participant "MenuController" as Controller
+participant "CreateMenuUseCase" as UseCase
+participant "UserGateway" as UserPort
+participant "RestaurantGateway" as RestaurantPort
+participant "User" as User
+participant "Restaurant" as Restaurant
+participant "Menu" as Menu
+
+Client -> Controller : POST /restaurants/{restaurantId}/menus\nMenuRequestPayload
+Controller -> UseCase : execute(userId, restaurantId, MenuRequestDTO)
+
+UseCase -> UserPort : findById(userId)
+UserPort --> UseCase : User
+
+UseCase -> RestaurantPort : findById(restaurantId)
+RestaurantPort --> UseCase : Restaurant
+
+UseCase -> User : ensureCanManageRestaurant(Restaurant)
+
+UseCase -> Menu : new Menu(name)
+UseCase -> Restaurant : addMenu(Menu)
+
+UseCase -> RestaurantPort : save(Restaurant)
+RestaurantPort --> UseCase : Restaurant salvo
+
+UseCase --> Controller : MenuResultDTO
+Controller --> Client : 201 CREATED\nMenuResponsePayload
+
+@enduml

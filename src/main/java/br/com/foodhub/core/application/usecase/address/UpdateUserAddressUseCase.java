@@ -42,13 +42,6 @@ public class UpdateUserAddressUseCase {
         }
         gateway.save(user);
 
-        return new UserAddressResultDTO(
-                address.getId(),
-                address.getUserId(),
-                address.getAddressId(),
-                address.isPrimary(),
-                address.getNumber(),
-                address.getComplement()
-        );
+        return UserAddressResultDTO.from(address);
     }
 }

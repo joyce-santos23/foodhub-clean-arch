@@ -9,4 +9,6 @@ public interface UserTypeMongoRepository
         extends MongoRepository<UserTypeDocument, String> {
 
     Optional<UserTypeDocument> findByName(String name);
+
+    boolean existsByName(String normalizedName);
 }

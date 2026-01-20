@@ -70,10 +70,8 @@ public class UserMapper {
         doc.setCpf(user.getCpf());
         doc.setPassword(user.getPassword());
 
-        // 🔥 ESSENCIAL
         doc.setUserTypeId(user.getUserType().getId());
 
-        // addresses
         if (user.getAddresses() != null) {
             doc.setAddresses(
                     user.getAddresses().stream()
@@ -88,7 +86,6 @@ public class UserMapper {
             );
         }
 
-        // restaurants
         if (user.getRestaurants() != null) {
             doc.setRestaurants(
                     user.getRestaurants().stream()

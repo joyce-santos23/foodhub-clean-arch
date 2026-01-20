@@ -1,0 +1,36 @@
+@startuml
+title FoodHub - Diagrama de Sequência (Visão Geral do Sistema)
+
+actor Client
+
+participant "Controller\n(Web / Presentation)" as Controller
+participant "Web Mapper" as WebMapper
+participant "Use Case\n(Application)" as UseCase
+participant "Domain\n(Entity / VO)" as Domain
+participant "Port\n(Gateway Interface)" as Port
+participant "Infrastructure\n(Gateway Impl)" as Infra
+database "MongoDB" as Mongo
+
+Client -> Controller : HTTP Request
+Controller -> WebMapper : map Request → DTO
+WebMapper -> UseCase : DTO
+
+UseCase -> Domain : execute business rules
+Domain --> UseCase : validated entity / exception
+
+alt Business rule violated
+    Domain --> UseCase : DomainException
+    UseCase --> Controller : propagate exception
+    Controller --> Client : HTTP Error Response
+else Valid flow
+    UseCase -> Port : call port
+    Port -> Infra : implementation call
+    Infra -> Mongo : read/write data
+    Mongo --> Infra : persisted data
+    Infra --> UseCase : entity
+    UseCase -> WebMapper : map entity → response
+    WebMapper -> Controller : Response Payload
+    Controller --> Client : HTTP Response
+end
+
+@enduml

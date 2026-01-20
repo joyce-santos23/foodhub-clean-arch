@@ -1,11 +1,27 @@
 services:
+  api:
+    build:
+      context: .
+    container_name: foodhub-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    env_file: .env
+    environment:
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
+    restart: unless-stopped
+
   mongodb:
     image: mongo:7
     container_name: foodhub-mongo
     restart: always
     command: ["mongod", "--quiet"]
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
+      test: ["CMD", "nc", "-z", "localhost", "27017"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 20s
     ports:
       - "27017:27017"
@@ -15,20 +31,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DB}
-
-  api:
-    build:
-      context: .
-    container_name: foodhub-api
-    ports:
-      - "8080:8080"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    env_file: .env
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://foodhub:foodhub123@mongodb:27017/foodhub?authSource=admin
-    restart: unless-stopped
 
 volumes:
   mongo_data:

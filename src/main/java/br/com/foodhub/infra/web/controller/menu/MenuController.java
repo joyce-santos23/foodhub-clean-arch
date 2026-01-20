@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Restaurantes")
+
 @RestController
 @RequestMapping("api/v1/restaurants/{restaurantId}/menus")
 @RequiredArgsConstructor

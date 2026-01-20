@@ -1,0 +1,58 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+title FoodHub - Arquitetura do Sistema (Clean Architecture)
+
+package "Web / Presentation" {
+  [Controllers]
+  [Request / Response Payloads]
+  [Web Mappers]
+}
+
+package "Application" {
+  [UseCases]
+  [DTOs]
+  [Ports]
+}
+
+package "Domain" {
+  [Entities]
+  [Value Objects]
+  [Domain Exceptions]
+}
+
+package "Infrastructure" {
+  [MongoDB Persistence]
+  [Gateways]
+  [Repositories]
+  [Documents]
+  [Mappers]
+  [Security Config]
+  [GlobalExceptionHandler]
+}
+
+database "MongoDB" {
+}
+
+' =====================
+' Dependencies
+' =====================
+
+[Controllers] --> [UseCases]
+[Request / Response Payloads] --> [Controllers]
+[Web Mappers] --> [DTOs]
+
+[UseCases] --> [Entities]
+[UseCases] --> [Ports]
+[UseCases] --> [Domain Exceptions]
+
+[MongoDB Persistence] --> "MongoDB"
+[Gateways] ..|> [Ports]
+[Gateways] --> [Repositories]
+[Repositories] --> [Documents]
+[Documents] --> "MongoDB"
+
+
+@enduml
